@@ -66,7 +66,7 @@ namespace ShrimpPond.API.Controllers
         [HttpGet("GetPondAd")]
         public async Task<IActionResult> GetPondAd([FromQuery] string userName, string farmName, EPondStatus? pondStatus)
         {
-            var ponds = await _mediator.Send(new GetPondAdvance { userName = userName, farmName = farmName });
+            var ponds = await _mediator.Send(new GetPondAdvance { Email = userName, FarmName = farmName });
             if (pondStatus != null)
             {
                 ponds = ponds.Where(x => x.status == pondStatus).ToList();

@@ -27,7 +27,7 @@ namespace ShrimpPond.Application.Feature.Alarm.Queries.GetAllAlarm
         {
             //query
 
-            var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.farmId);
+            var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.FarmId);
             if (farm == null)
             {
                 throw new BadRequestException("Farm not found");

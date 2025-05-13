@@ -31,7 +31,7 @@ namespace ShrimpPond.Application.Feature.Pond.Queries.GetPondAdvance
             var data = new List<GetPondAdvanceDTO>();
 
 
-            var farm = _unitOfWork.farmRepository.FindByCondition(x => x.FarmName == request.farmName && x.UserName == request.userName).FirstOrDefault();
+            var farm = _unitOfWork.farmRepository.FindByCondition(x => x.FarmName == request.FarmName && x.Email == request.Email).FirstOrDefault();
             if (farm == null)
             {
                 throw new BadRequestException("Not Found Farm");

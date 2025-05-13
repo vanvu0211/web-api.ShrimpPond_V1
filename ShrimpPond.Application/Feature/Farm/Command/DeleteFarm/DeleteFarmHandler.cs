@@ -28,12 +28,14 @@ namespace ShrimpPond.Application.Feature.Farm.Command.DeleteFarm
                 throw new BadRequestException("Not found Farm");
             }
 
-            var pondType = _unitOfWork.pondTypeRepository.FindByCondition(x => x.FarmId == deleteFarm.FarmId).FirstOrDefault();
-            if (pondType != null)
-            {
-                throw new BadRequestException("PondType is still exits in Farm");
+            var ponds = _unitOfWork.pondRepository.FindByCondition(x => x.FarmId == deleteFarm.FarmId).ToList();
+            if (ponds.Count !=  0)
+            {     
+                throw new BadRequestException($"Trang trại còn các ao: {string.Join(",", ponds.Select(pond => pond.PondName).OrderBy(name => name))}");
             }
-            
+
+
+
 
 
             _unitOfWork.farmRepository.Remove(deleteFarm);

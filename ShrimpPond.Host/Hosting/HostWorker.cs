@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ using ShrimpPond.Host.Hubs;
 using ShrimpPond.Host.Model;
 using ShrimpPond.Host.MQTTModels;
 using ShrimpPond.Infrastructure.Communication;
+using System;
 using Timer = System.Timers.Timer;
 
 
@@ -77,8 +79,12 @@ namespace ShrimpPond.Host.Hosting
             using var scope = _scopeFactory.CreateScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
+            var dataPonds = new List<string>(); //Danh sachs ao
+            var countPond = 0;// so luong ao
+
             switch (topic1)
             {
+
                 case "POND":
                     {
                         count = int.Parse(payloadMessage);
@@ -130,11 +136,24 @@ namespace ShrimpPond.Host.Hosting
                                 }
                             case "VALVE":
                                 {
+                                    var alarm = new Alarm()
+                                    {
+                                        AlarmName = "Cảnh báo",
+                                        AlarmDetail = "Van xả cần vệ sinh",
+                                        AlarmDate = DateTime.UtcNow.AddHours(7),
+                                        FarmId = farmId
+                                    };
+                                    unitOfWork.alarmRepository.Add(alarm);
+                                    await unitOfWork.SaveChangeAsync();
 
+                                    //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: EMPTY ");
+                                    await SendMail("van048483@gmail.com", "Van xả cần vệ sinh","");
                                     break;
                                 }
                             default:
                                 {
+                                    if(timer != null) timer.Stop();//Dừng timer khi có dữ liệu gửi về
+
                                     if (payloadMessage == "EMPTY")
                                     {
                                         try
@@ -144,7 +163,7 @@ namespace ShrimpPond.Host.Hosting
                                             var alarm = new Alarm()
                                             {
                                                 AlarmName = "Cảnh báo",
-                                                AlarmDetail = "Mất dữ liệu ao: " + topic2.ToString(),
+                                                AlarmDetail = "Bơm ao " + topic2.ToString() + " bị hư hoặc không có nước",
                                                 AlarmDate = DateTime.UtcNow.AddHours(7),
                                                 FarmId = farmId
                                             };
@@ -152,13 +171,10 @@ namespace ShrimpPond.Host.Hosting
                                             await unitOfWork.SaveChangeAsync();
 
                                             //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: EMPTY ");
-                                            await SendMail("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: EMPTY ");
+                                            await SendMail("van048483@gmail.com", "Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
                                         }
                                         catch { }
                                     }
-
-                                    timer.Stop();
-
 
                                     var pond = unitOfWork.pondRepository.FindByCondition(x => x.FarmId == farmId && x.PondName == topic2).FirstOrDefault();
                                     if (pond == null) break;
@@ -173,6 +189,26 @@ namespace ShrimpPond.Host.Hosting
                                     {
                                         temp = 1;
                                         time = DateTime.UtcNow.AddHours(7);
+                                    }
+
+                                    //Kiểm tra có lỗi van ko
+                                    if(payloadMessage == "van khong dong")
+                                    {
+                                        var alarm = new Alarm()
+                                        {
+                                            AlarmName = "Cảnh báo",
+                                            AlarmDetail = "Lỗi van không đóng: " + topic2.ToString(),
+                                            AlarmDate = DateTime.UtcNow.AddHours(7),
+                                            FarmId = farmId
+                                        };
+                                        unitOfWork.alarmRepository.Add(alarm);
+                                        await unitOfWork.SaveChangeAsync();
+
+                                        await SendMail("vu34304@gmail.com", "Lỗi van không đóng" , topic2);
+                                        await SendMail("van048483@gmail.com", "Lỗi van không đóng" , topic2);
+
+                                        dataPonds.Add(topic2);
+                                        countPond++;
                                     }
 
                                     var environments = JsonConvert.DeserializeObject<List<EnviromentData>>(payloadMessage)!.ToList();
@@ -211,10 +247,10 @@ namespace ShrimpPond.Host.Hosting
                                         {
                                             config.pHTop = 8.7;
                                             config.pHLow = 7.5;
-                                            config.oxiLow = 3;
-                                            config.oxiTop = 7;
-                                            config.temperatureLow = 25;
-                                            config.temperatureTop = 35;
+                                            config.OxiLow = 3;
+                                            config.OxiTop = 7;
+                                            config.TemperatureLow = 25;
+                                            config.TemperatureTop = 35;
 
                                         }
                                         //So sánh dữ liệu gửi thông báo
@@ -223,7 +259,7 @@ namespace ShrimpPond.Host.Hosting
 
                                             case "Temperature":
                                                 {
-                                                    if (float.Parse(environment.value) >= config.temperatureTop || float.Parse(environment.value) <= config.temperatureLow)
+                                                    if (float.Parse(environment.value) >= config.TemperatureTop || float.Parse(environment.value) <= config.TemperatureLow)
                                                     {
                                                         var alarm = new Alarm()
                                                         {
@@ -245,7 +281,7 @@ namespace ShrimpPond.Host.Hosting
                                                 }
                                             case "O2":
                                                 {
-                                                    if (float.Parse(environment.value) >= config.oxiTop || float.Parse(environment.value) <= config.oxiLow)
+                                                    if (float.Parse(environment.value) >= config.OxiTop || float.Parse(environment.value) <= config.OxiLow)
 
                                                     {
 
@@ -290,6 +326,23 @@ namespace ShrimpPond.Host.Hosting
                                     break;
                                 }
                         }
+
+                        if(countPond != 0)
+                        {
+                            var dataponds = string.Join(",", dataPonds);
+                            await SendMail("vu34304@gmail.com", "Gửi tín hiệu đo lại", dataponds);
+                            await SendMail("van048483@gmail.com", "Gửi tín hiệu đo lại", dataponds);
+
+                            //Gửi tín hiệu đo lại
+                            await _mqttClient.Publish($"SHRIMP_POND/SELECT_POND", dataponds, true);
+                            await _mqttClient.Publish($"SHRIMP_POND/POND/COUNT", count.ToString(), false);
+                            await Task.Delay(1000);
+                            await _mqttClient.Publish($"SHRIMP_POND/START", "START", false);
+                            await _mqttClient.Publish($"SHRIMP_POND/START_TIME/STATUS", "START", false);
+                            countPond = 0;
+                            dataPonds = new List<string>();
+                        }
+                        
                         break;
                     }
                 case "Machine_Status":
@@ -450,6 +503,25 @@ namespace ShrimpPond.Host.Hosting
                                 }
 
                         }
+                        break;
+                    }
+
+                case "ERROR_CHECK":
+                    {
+                        var data = new DataNotification(topic2, payloadMessage);
+                        string jsonData = JsonConvert.SerializeObject(data);
+                        //Luu alarm
+                        var alarm = new Alarm()
+                        {
+                            AlarmName = "Thông báo",
+                            AlarmDetail = "Tình trạng kết nối ESP tủ điện 1: " + payloadMessage,
+                            AlarmDate = DateTime.UtcNow.AddHours(7),
+                            FarmId = farmId
+                        };
+                        unitOfWork.alarmRepository.Add(alarm);
+                        await unitOfWork.SaveChangeAsync();
+                        await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 1 " , payloadMessage.ToString());
+                        await SendMail("vu34304@gmail.com", "Tình trạng kết nối ESP tủ điện 1 " , payloadMessage.ToString());
                         break;
                     }
             }

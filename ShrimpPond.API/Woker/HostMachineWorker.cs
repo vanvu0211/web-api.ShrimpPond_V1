@@ -90,7 +90,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = "Tình trạng kết nối ESP tủ điện 2: " + payloadMessage,
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     ////unitOfWork.alarmRepository.Add(alarm);
                                     ////await unitOfWork.SaveChangeAsync();
@@ -118,7 +118,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = (payloadMessage == "OFF") ? "Tắt" + " máy quạt oxi" : "Bật" ,
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     //unitOfWork.alarmRepository.Add(alarm);
                                     //await unitOfWork.SaveChangeAsync();
@@ -146,7 +146,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = (payloadMessage == "OFF") ? "Tắt máy lọc phân" : "Bật máy lọc phân",
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     //unitOfWork.alarmRepository.Add(alarm);
                                     //await unitOfWork.SaveChangeAsync();
@@ -173,7 +173,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = (payloadMessage == "OFF") ? "Tắt" + " máy quạt 1" : "Bật" + " máy quạt 1",
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     //unitOfWork.alarmRepository.Add(alarm);
                                     //await unitOfWork.SaveChangeAsync();
@@ -200,7 +200,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = (payloadMessage == "OFF") ? "Tắt" + " máy quạt 2" : "Bật" + " máy quạt 2",
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     //unitOfWork.alarmRepository.Add(alarm);
                                     //await unitOfWork.SaveChangeAsync();
@@ -227,7 +227,7 @@ namespace ShrimpPond.API.Woker
                                     //    AlarmName = "Thông báo",
                                     //    AlarmDetail = (payloadMessage == "OFF") ? "Tắt" + " máy quạt 3" : "Bật" + " máy quạt 3",
                                     //    AlarmDate = DateTime.UtcNow.AddHours(7),
-                                    //    farmId = farmId
+                                    //    FarmId = FarmId
                                     //};
                                     //unitOfWork.alarmRepository.Add(alarm);
                                     //await unitOfWork.SaveChangeAsync();

@@ -23,7 +23,7 @@ namespace ShrimpPond.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEnvironment([FromQuery] int farmId, DateTime startDate, DateTime endDate, int pageSize = 200, int pageNumber = 1)
         {
-            var alarms = await _mediator.Send(new GetAllAlarm() { farmId = farmId });
+            var alarms = await _mediator.Send(new GetAllAlarm() { FarmId = farmId });
 
             // Lọc và lấy tổng số trước khi phân trang
             var filteredAlarms = alarms

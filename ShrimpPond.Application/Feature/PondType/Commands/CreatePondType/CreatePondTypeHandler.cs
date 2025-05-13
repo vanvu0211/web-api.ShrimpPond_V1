@@ -35,12 +35,6 @@ namespace ShrimpPond.Application.Feature.PondType.Commands.CreatePondType
             {
                 throw new BadRequestException("Farm not found");
             }
-
-            var pondType = _unitOfWork.pondTypeRepository.FindByCondition(x =>  x.PondTypeName == request.pondTypeName && x.FarmId == farm.FarmId).FirstOrDefault();
-            if (pondType != null)
-            {
-                throw new BadRequestException("pondTypeName duplicate");
-            }
             var createPondType = new Domain.PondData.PondType()
             {
                 PondTypeId = request.pondTypeId,

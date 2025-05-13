@@ -31,7 +31,7 @@ namespace ShrimpPond.Application.Feature.Farm.Queries.GetAllFarm
             var data = new List<FarmDTO>();
 
 
-            var farms = _unitOfWork.farmRepository.FindAll().Where(x=>x.UserName == request.userName).ToList();
+            var farms = _unitOfWork.farmRepository.FindAll().Where(x=>x.Email == request.Email).ToList();
 
 
             foreach (var farm in farms)

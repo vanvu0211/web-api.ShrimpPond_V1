@@ -9,6 +9,6 @@ namespace ShrimpPond.Application.Feature.Alarm.Queries.GetAllAlarm
 {
     public class GetAllAlarm: IRequest<List<GetAllAlarmDTO>>
     {
-        public int farmId { get; set; }
+        public int FarmId { get; set; }
     }
 }

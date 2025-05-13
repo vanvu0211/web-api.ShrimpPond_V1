@@ -9,6 +9,6 @@ namespace ShrimpPond.Application.Feature.Farm.Queries.GetAllFarm
 {
     public class GetAllFarm: IRequest<List<FarmDTO>>
     {
-        public string userName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
     }
 }

@@ -19,11 +19,11 @@ namespace ShrimpPond.API.Controllers
             _mediator = mediator;
         }
         [HttpGet]
-        public async Task<IActionResult> GetFarm([FromQuery] string userName, int pageSize = 200, int pageNumber = 1)
+        public async Task<IActionResult> GetFarm([FromQuery] string email, int pageSize = 200, int pageNumber = 1)
         {
             var farms = await _mediator.Send(new GetAllFarm()
             {
-                userName = userName
+                Email = email
             });
                 
             farms = farms.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();

@@ -9,7 +9,7 @@ namespace ShrimpPond.Application.Contract.GmailService
 {
     public interface IGmailSender
     {
-
         Task<bool> SendGmail(GmailMessage gmail);
+        Task<bool> SendConfirmationEmailAsync(GmailMessage gmailMessage);
     }
 }

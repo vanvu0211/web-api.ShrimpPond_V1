@@ -28,7 +28,7 @@ namespace ShrimpPond.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetConfig([FromQuery] int farmId )
         {
-            var configs = await _mediator.Send(new GetConfig() { farmId = farmId});
+            var configs = await _mediator.Send(new GetConfig() { FarmId = farmId});
             return Ok(configs);
         }
     }

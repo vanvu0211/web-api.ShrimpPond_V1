@@ -76,7 +76,7 @@ namespace ShrimpPond.Host.Hosting
                         lastSentTime = nowTime;
                         Console.Write(lastSentTime);
                         await _mqttClient.Publish($"SHRIMP_POND/SELECT_POND", dataPonds, true);
-                        await _mqttClient.Publish($"SHRIMP_POND/POND/COUNT", ponds.Count().ToString(), true);
+                        await _mqttClient.Publish($"SHRIMP_POND/POND/COUNT", ponds.Count().ToString(), false);
                         await Task.Delay(1000);
                         await _mqttClient.Publish($"SHRIMP_POND/START", "START", false);
                         await _mqttClient.Publish($"SHRIMP_POND/START_TIME/STATUS", "START", false);

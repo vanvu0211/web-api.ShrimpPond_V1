@@ -33,10 +33,10 @@ namespace ShrimpPond.Application.Feature.Configuration.Command.SetConfig
                 Id = new Guid(),
                 pHLow = request.pHLow,
                 pHTop = request.pHTop,
-                oxiLow = request.oxiLow,
-                oxiTop = request.oxiTop,
-                temperatureLow = request.temperatureLow,
-                temperatureTop = request.temperatureTop,
+                OxiLow = request.oxiLow,
+                OxiTop = request.oxiTop,
+                TemperatureLow = request.temperatureLow,
+                TemperatureTop = request.temperatureTop,
                 FarmId = request.FarmId,
             };
             _unitOfWork.configurationRepository.Add(newConfig);

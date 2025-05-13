@@ -26,12 +26,12 @@ namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
             }
             //convert
 
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByNameAsync(request.Email);
             if (user == null)
             {
                 throw new BadRequestException("User not found");
             }
-            var farm = _unitOfWork.farmRepository.FindByCondition(x => x.FarmName == request.FarmName && x.UserName == request.UserName).FirstOrDefault();
+            var farm = _unitOfWork.farmRepository.FindByCondition(x => x.FarmName == request.FarmName && x.Email == request.Email).FirstOrDefault();
             if(farm != null)
             {
                 throw new BadRequestException("Farm is already exit");
@@ -40,7 +40,7 @@ namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
             {
                 FarmName = request.FarmName,
                 Address = request.Address,
-                UserName = user.UserName
+                Email = user.Email
             };
 
             _unitOfWork.farmRepository.Add(farmData);

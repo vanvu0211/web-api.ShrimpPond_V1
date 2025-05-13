@@ -14,11 +14,11 @@ namespace ShrimpPond.Domain.Configuration
         public double pHTop { get; set; }
         public double pHLow { get; set; }
 
-        public double oxiTop { get; set; }
-        public double oxiLow { get; set; }
+        public double OxiTop { get; set; }
+        public double OxiLow { get; set; }
 
-        public double temperatureTop { get; set; }
-        public double temperatureLow { get; set; }
+        public double TemperatureTop { get; set; }
+        public double TemperatureLow { get; set; }
 
         public int FarmId { get; set; }
         public Domain.Farm.Farm? Farm { get; set; }

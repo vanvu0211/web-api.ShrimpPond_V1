@@ -43,6 +43,7 @@ namespace ShrimpPond.API
             builder.Services.AddSingleton<ManagedMqttClient>();
             builder.Services.AddHostedService<HostMachineWorker>();
 
+            builder.Services.AddControllersWithViews();
             // For Entity Framework
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ShrimpPondAuth")));
 

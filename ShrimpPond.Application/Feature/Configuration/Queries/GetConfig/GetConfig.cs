@@ -10,6 +10,6 @@ namespace ShrimpPond.Application.Feature.Configuration.Queries.GetConfig
 {
     public class GetConfig: IRequest<Domain.Configuration.Configuration>
     {
-        public int farmId {  get; set; }
+        public int FarmId {  get; set; }
     }
 }

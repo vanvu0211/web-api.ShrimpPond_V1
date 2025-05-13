@@ -10,8 +10,8 @@ namespace ShrimpPond.Application.Feature.Pond.Queries.GetPondAdvance
 {
     public class GetPondAdvance : IRequest<List<GetPondAdvanceDTO>>
     {
-        public string userName { get; set; } = string.Empty;
-        public string farmName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string FarmName { get; set; } = string.Empty;
         
     }
 }
