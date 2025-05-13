@@ -12,5 +12,6 @@ namespace ShrimpPond.Domain.Farm
         public string Email { get; set; } = string.Empty;
         public string FarmName { get; set;} = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public ICollection<string> EmailMembers { get; set; }
     }
 }
