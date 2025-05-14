@@ -30,9 +30,6 @@ namespace ShrimpPond.Application.Feature.Configuration.Queries.GetConfig
                 throw new BadRequestException("Farm not found");
             }
 
-            var email = await _userManager.FindByEmailAsync(farm.Email);
-
-
             var configurations = _unitOfWork.configurationRepository.FindByCondition(x => x.FarmId == request.FarmId).OrderBy(x=>x.Id).LastOrDefault();
             return configurations;
         }

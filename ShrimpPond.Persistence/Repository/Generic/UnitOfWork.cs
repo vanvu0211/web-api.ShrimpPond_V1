@@ -37,6 +37,7 @@ namespace ShrimpPond.Persistence.Repository.Generic
             pondIdRepository = new PondIdRepository(context);
             alarmRepository = new AlarmRepository(context);
             configurationRepository = new ConfigurationRepository(context);
+            farmRoleRepository = new FarmRoleRepository(context);
         }
         public IPondRepository pondRepository { get; private set; }
         public ICertificateRepository certificateRepository { get; private set; }
@@ -59,6 +60,7 @@ namespace ShrimpPond.Persistence.Repository.Generic
         public IPondIdRepository pondIdRepository { get; private set; }
         public IAlarmRepository alarmRepository { get; private set; }
         public IConfigurationRepository configurationRepository { get; private set; }
+        public IFarmRoleRepository farmRoleRepository { get; private set; }
 
         public async Task<int> CommitAsync()
         {

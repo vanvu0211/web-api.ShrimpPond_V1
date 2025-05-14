@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using ShrimpPond.Application.Contract.Persistence.Genenric;
 using ShrimpPond.Application.Exceptions;
+using ShrimpPond.Domain.Farm;
 
 namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
 {
@@ -31,18 +32,24 @@ namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
             {
                 throw new BadRequestException("User not found");
             }
-            var farm = _unitOfWork.farmRepository.FindByCondition(x => x.FarmName == request.FarmName && x.Email == request.Email).FirstOrDefault();
-            if(farm != null)
+            var farm = _unitOfWork.farmRepository
+                        .FindByCondition(x => x.FarmName == request.FarmName && x.Members.Any(m => m.Email == request.Email))
+                        .FirstOrDefault();
+            if (farm != null)
             {
-                throw new BadRequestException("Farm is already exit");
+                throw new BadRequestException("Tên trạng trại đã tồn tại!");
             }
+
+            var members = new List<FarmRole>();
+            var admin = new FarmRole() { Email = request.Email, IsAdmin = true, Id = new Guid() };
+            members.Add(admin);
+            _unitOfWork.farmRoleRepository.Add(admin);
             var farmData = new Domain.Farm.Farm()
             {
                 FarmName = request.FarmName,
                 Address = request.Address,
-                Email = user.Email
+                Members = members
             };
-
             _unitOfWork.farmRepository.Add(farmData);
             await _unitOfWork.SaveChangeAsync();
             //return 

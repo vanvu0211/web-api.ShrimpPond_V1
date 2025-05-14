@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShrimpPond.Application.Feature.Farm.Command.CreateFarm;
 using ShrimpPond.Application.Feature.Farm.Command.DeleteFarm;
+using ShrimpPond.Application.Feature.Farm.Command.InviteMember;
+using ShrimpPond.Application.Feature.Farm.Command.RemoveMember;
 using ShrimpPond.Application.Feature.Farm.Queries.GetAllFarm;
+using ShrimpPond.Application.Feature.Farm.Queries.GetMemeber;
 
 namespace ShrimpPond.API.Controllers
 {
@@ -25,10 +28,21 @@ namespace ShrimpPond.API.Controllers
             {
                 Email = email
             });
-                
+
             farms = farms.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
             return Ok(farms);
         }
+
+        [HttpGet("GetMember")]
+        public async Task<IActionResult> GetMember([FromQuery]  int farmId )
+        {
+            var members = await _mediator.Send(new GetMemeber()
+            {
+               FarmId = farmId
+            });
+            return Ok(members);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateFarm([FromBody] CreateFarm e)
         {
@@ -36,10 +50,23 @@ namespace ShrimpPond.API.Controllers
             return Ok(e);
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteFarm([FromQuery] int farmId)
+        [HttpPut("InviteMember")]
+        public async Task<IActionResult> InviteMember([FromBody] InviteMember e)
         {
-            var command = new DeleteFarm { farmId = farmId };
+            var id = await _mediator.Send(e);
+            return Ok(e);
+        }
+
+        [HttpPut("RemoveMember")]
+        public async Task<IActionResult> RemoveMember([FromBody] RemoveMember e)
+        {
+            var id = await _mediator.Send(e);
+            return Ok(e);
+        }
+        [HttpDelete]
+        public async Task<IActionResult> DeleteFarm([FromQuery] int farmId, string email)
+        {
+            var command = new DeleteFarm { FarmId = farmId, Email = email };
             var IdReturn = await _mediator.Send(command);
             return Ok(command);
         }

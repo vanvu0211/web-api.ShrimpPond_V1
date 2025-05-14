@@ -29,6 +29,7 @@ namespace ShrimpPond.Application.Contract.Persistence.Genenric
         IPondIdRepository pondIdRepository { get; }
         IAlarmRepository alarmRepository { get; }
         IConfigurationRepository configurationRepository { get; }
+        IFarmRoleRepository farmRoleRepository { get; }
         Task<int> CommitAsync();
         Task SaveChangeAsync();
     }
