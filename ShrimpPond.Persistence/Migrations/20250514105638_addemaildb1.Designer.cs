@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShrimpPond.Persistence.DatabaseContext;
 
@@ -11,9 +12,10 @@ using ShrimpPond.Persistence.DatabaseContext;
 namespace ShrimpPond.Persistence.Migrations
 {
     [DbContext(typeof(ShrimpPondDbContext))]
-    partial class ShrimpPondDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514105638_addemaildb1")]
+    partial class addemaildb1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

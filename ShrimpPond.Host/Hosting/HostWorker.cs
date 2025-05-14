@@ -7,6 +7,7 @@ using ShrimpPond.Application.Contract.GmailService;
 using ShrimpPond.Application.Contract.Persistence.Genenric;
 using ShrimpPond.Application.Models.Gmail;
 using ShrimpPond.Domain.Alarm;
+using ShrimpPond.Domain.Configuration;
 using ShrimpPond.Host.Hubs;
 using ShrimpPond.Host.Model;
 using ShrimpPond.Host.MQTTModels;
@@ -33,7 +34,14 @@ namespace ShrimpPond.Host.Hosting
         public int temp { get; set; } = 1;
         public int farmId { get; set; }
         public DateTime time { get; set; }
+
         private static Timer timer;
+
+        public List<string> dataPonds = new List<string>(); //Danh sachs ao
+
+        public int countPond = 0;// so luong ao
+
+        public List<string> MemberFarms = new List<string>();
 
         public HostWorker(ManagedMqttClient mqttClient, IServiceScopeFactory scopeFactory, IGmailSender gmailSender, IHubContext<MachineHub> hubContext)
         {
@@ -79,8 +87,7 @@ namespace ShrimpPond.Host.Hosting
             using var scope = _scopeFactory.CreateScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-            var dataPonds = new List<string>(); //Danh sachs ao
-            var countPond = 0;// so luong ao
+
 
             switch (topic1)
             {
@@ -89,7 +96,7 @@ namespace ShrimpPond.Host.Hosting
                     {
                         count = int.Parse(payloadMessage);
                         temp = 1;
-                        double interval = 5 * 60 * 1000 * count; // 5 phút * count (mili giây)
+                        double interval = 6 * 60 * 1000 * count; // 5 phút * count (mili giây)
                         timer = new Timer(interval);
                         timer.Elapsed += async (sender, e) => await TimerElapsed(sender, e); ;
                         timer.AutoReset = false; // Đặt thành true nếu muốn lặp lại
@@ -123,6 +130,7 @@ namespace ShrimpPond.Host.Hosting
                 case "FarmId":
                     {
                         farmId = Convert.ToInt32(payloadMessage);
+                        MemberFarms = unitOfWork.farmRoleRepository.FindByCondition(x => x.FarmId == farmId).Select(x => x.Email).ToList();
                         break;
                     }
                 case "ENVIRONMENT":
@@ -131,7 +139,6 @@ namespace ShrimpPond.Host.Hosting
                         {
                             case "TEMP":
                                 {
-
                                     break;
                                 }
                             case "VALVE":
@@ -145,21 +152,17 @@ namespace ShrimpPond.Host.Hosting
                                     };
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
-
-                                    //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: EMPTY ");
-                                    await SendMail("van048483@gmail.com", "Van xả cần vệ sinh","");
+                                    await SendMail("van048483@gmail.com", "Van xả cần vệ sinh", "");
                                     break;
                                 }
                             default:
                                 {
-                                    if(timer != null) timer.Stop();//Dừng timer khi có dữ liệu gửi về
+
 
                                     if (payloadMessage == "EMPTY")
                                     {
                                         try
                                         {
-                                            //Luu alarm
-
                                             var alarm = new Alarm()
                                             {
                                                 AlarmName = "Cảnh báo",
@@ -169,12 +172,13 @@ namespace ShrimpPond.Host.Hosting
                                             };
                                             unitOfWork.alarmRepository.Add(alarm);
                                             await unitOfWork.SaveChangeAsync();
-
-                                            //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: EMPTY ");
-                                            await SendMail("van048483@gmail.com", "Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
+                                            //await SendMail("van048483@gmail.com", "[Cảnh báo] Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
+                                            await SendMailForMember(MemberFarms, "[Cảnh báo] Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
+                                            return;
                                         }
                                         catch { }
                                     }
+
 
                                     var pond = unitOfWork.pondRepository.FindByCondition(x => x.FarmId == farmId && x.PondName == topic2).FirstOrDefault();
                                     if (pond == null) break;
@@ -182,7 +186,7 @@ namespace ShrimpPond.Host.Hosting
                                     if (temp <= count && startTime != null)
                                     {
                                         var unitTime = (DateTime.UtcNow.AddHours(7) - startTime.Value).TotalMinutes * temp / count;
-                                        time = startTime.Value.AddMinutes(unitTime);// chia thời gian cho mỗi lần đo
+                                        time = startTime.Value.AddMinutes(unitTime);
                                         temp++;
                                     }
                                     else
@@ -191,8 +195,7 @@ namespace ShrimpPond.Host.Hosting
                                         time = DateTime.UtcNow.AddHours(7);
                                     }
 
-                                    //Kiểm tra có lỗi van ko
-                                    if(payloadMessage == "van khong dong")
+                                    if (payloadMessage == "van khong dong")
                                     {
                                         var alarm = new Alarm()
                                         {
@@ -204,145 +207,121 @@ namespace ShrimpPond.Host.Hosting
                                         unitOfWork.alarmRepository.Add(alarm);
                                         await unitOfWork.SaveChangeAsync();
 
-                                        await SendMail("vu34304@gmail.com", "Lỗi van không đóng" , topic2);
-                                        await SendMail("van048483@gmail.com", "Lỗi van không đóng" , topic2);
-
+                                        //await SendMail("vu34304/*@*/gmail.com", "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
+                                        //await SendMail("van048483@gmail.com", "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
+                                        await SendMailForMember(MemberFarms, "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
                                         dataPonds.Add(topic2);
                                         countPond++;
+
                                     }
 
-                                    var environments = JsonConvert.DeserializeObject<List<EnviromentData>>(payloadMessage)!.ToList();
-
-                                    foreach (var environment in environments)
+                                    else
                                     {
-                                        //Lưu vào database
 
-                                        var valueEnvironment = environment.value;
-                                        try
+                                        var environments = JsonConvert.DeserializeObject<List<EnviromentData>>(payloadMessage)!.ToList();
+
+                                        foreach (var environment in environments)
                                         {
-                                            valueEnvironment = Math.Round(float.Parse(environment.value), 2).ToString();
-                                        }
-                                        catch
-                                        {
-                                            ;
-                                        }
+                                            var valueEnvironment = environment.value;
+                                            try
+                                            {
+                                                valueEnvironment = Math.Round(float.Parse(environment.value), 2).ToString();
+                                            }
+                                            catch
+                                            {
+                                                ;
+                                            }
 
-                                        var data = new Domain.Environments.EnvironmentStatus()
-                                        {
-                                            PondId = pond.PondId,
-                                            Name = environment.name,
-                                            Value = valueEnvironment,
-                                            Timestamp = time,
-                                        };
+                                            var data = new Domain.Environments.EnvironmentStatus()
+                                            {
+                                                PondId = pond.PondId,
+                                                Name = environment.name,
+                                                Value = valueEnvironment,
+                                                Timestamp = time,
+                                            };
 
-                                        unitOfWork.environmentStatusRepository.Add(data);
-                                        await unitOfWork.SaveChangeAsync();
-                                        //Gửi dữ liệu
+                                            unitOfWork.environmentStatusRepository.Add(data);
+                                            await unitOfWork.SaveChangeAsync();
+                                            await SendMail("van048483@gmail.com", "[Thông báo] Gửi dữ liệu ao " + topic2, "Dữ liệu: " + JsonConvert.SerializeObject(data));
 
-                                        //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: " + JsonConvert.SerializeObject(data));
-                                        await SendMail("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, "Dữ liệu: " + JsonConvert.SerializeObject(data));
-
-                                        var config = unitOfWork.configurationRepository.FindByCondition(x => x.FarmId == farmId).OrderBy(x => x.Id).LastOrDefault();
-                                        if (config == null)
-                                        {
-                                            config.pHTop = 8.7;
-                                            config.pHLow = 7.5;
-                                            config.OxiLow = 3;
-                                            config.OxiTop = 7;
-                                            config.TemperatureLow = 25;
-                                            config.TemperatureTop = 35;
-
-                                        }
-                                        //So sánh dữ liệu gửi thông báo
-                                        switch (environment.name)
-                                        {
-
-                                            case "Temperature":
+                                            var config = unitOfWork.configurationRepository.FindByCondition(x => x.FarmId == farmId).OrderBy(x => x.Id).LastOrDefault();
+                                            if (config == null)
+                                            {
+                                                config = new Configuration
                                                 {
-                                                    if (float.Parse(environment.value) >= config.TemperatureTop || float.Parse(environment.value) <= config.TemperatureLow)
+                                                    pHTop = 8.7,
+                                                    pHLow = 7.5,
+                                                    OxiLow = 3,
+                                                    OxiTop = 7,
+                                                    TemperatureLow = 25,
+                                                    TemperatureTop = 35
+                                                };
+                                            }
+
+                                            switch (environment.name)
+                                            {
+                                                case "Temperature":
                                                     {
-                                                        var alarm = new Alarm()
+                                                        if (float.Parse(environment.value) >= config.TemperatureTop || float.Parse(environment.value) <= config.TemperatureLow)
                                                         {
-                                                            AlarmName = "Cảnh báo",
-                                                            AlarmDetail = "Nhiệt độ: " + environment.value.ToString() + " (độ) ngoài khoảng cho phép",
-                                                            AlarmDate = DateTime.UtcNow.AddHours(7),
-                                                            FarmId = farmId
-                                                        };
-                                                        unitOfWork.alarmRepository.Add(alarm);
-                                                        await unitOfWork.SaveChangeAsync();
-                                                        //Gui tin hieu signalR de canh bao
-                                                        string jsonData = JsonConvert.SerializeObject(alarm);
-                                                        await _hubContext.Clients.All.SendAsync("AlarmNotify", jsonData);
-                                                        //GUi mail
-                                                        //await SendMail("vu34304@gmail.com", "Cảnh báo nhiệt độ ao " + topic2, "Nhiệt độ: " + environment.value.ToString() + " (độ) ngoài khoảng cho phép");
-                                                        await SendMail("van048483@gmail.com", "Cảnh báo nhiệt độ ao " + topic2, "Nhiệt độ: " + environment.value.ToString() + " (độ) ngoài khoảng cho phép");
+                                                            var alarm = new Alarm()
+                                                            {
+                                                                AlarmName = "Cảnh báo",
+                                                                AlarmDetail = "Nhiệt độ: " + environment.value.ToString() + " (độ) ngoài khoảng cho phép",
+                                                                AlarmDate = DateTime.UtcNow.AddHours(7),
+                                                                FarmId = farmId
+                                                            };
+                                                            unitOfWork.alarmRepository.Add(alarm);
+                                                            await unitOfWork.SaveChangeAsync();
+                                                            string jsonData = JsonConvert.SerializeObject(alarm);
+                                                            await _hubContext.Clients.All.SendAsync("AlarmNotify", jsonData);
+                                                            
+                                                            await SendMailForMember(MemberFarms, "[Cảnh báo] Nhiệt độ ao " + topic2 + " vượt ngưỡng ", "Nhiệt độ: " + environment.value.ToString() + " (độ) ngoài khoảng cho phép");
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                            case "O2":
-                                                {
-                                                    if (float.Parse(environment.value) >= config.OxiTop || float.Parse(environment.value) <= config.OxiLow)
-
+                                                case "O2":
                                                     {
-
-                                                        var alarm = new Alarm()
+                                                        if (float.Parse(environment.value) >= config.OxiTop || float.Parse(environment.value) <= config.OxiLow)
                                                         {
-                                                            AlarmName = "Cảnh báo",
-                                                            AlarmDetail = "O2: " + environment.value.ToString() + " (mg/l) ngoài khoảng cho phép",
-                                                            AlarmDate = DateTime.UtcNow.AddHours(7),
-                                                            FarmId = farmId
-                                                        };
-                                                        unitOfWork.alarmRepository.Add(alarm);
-                                                        await unitOfWork.SaveChangeAsync();
-
-                                                        //await SendMail("vu34304@gmail.com", "Cảnh báo thông số O2 ao " + topic2, "O2: " + environment.value.ToString() + " (mg/l) ngoài khoảng cho phép");
-                                                        await SendMail("van048483@gmail.com", "Cảnh báo thông số O2  ao " + topic2, "O2: " + environment.value.ToString() + " (mg/l) ngoài khoảng cho phép");
+                                                            var alarm = new Alarm()
+                                                            {
+                                                                AlarmName = "Cảnh báo",
+                                                                AlarmDetail = "O2: " + environment.value.ToString() + " (mg/l) ngoài khoảng cho phép",
+                                                                AlarmDate = DateTime.UtcNow.AddHours(7),
+                                                                FarmId = farmId
+                                                            };
+                                                            unitOfWork.alarmRepository.Add(alarm);
+                                                            await unitOfWork.SaveChangeAsync();
+                                                            await SendMailForMember(MemberFarms, "[Cảnh báo] Nồng độ oxi hòa tan ao " + topic2 + " vượt ngưỡng", "O2: " + environment.value.ToString() + " (mg/l) ngoài khoảng cho phép");
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                            case "Ph":
-                                                {
-
-                                                    if (float.Parse(environment.value) >= config.pHTop || float.Parse(environment.value) <= config.pHLow)
+                                                case "Ph":
                                                     {
-                                                        var alarm = new Alarm()
+                                                        if (float.Parse(environment.value) >= config.pHTop || float.Parse(environment.value) <= config.pHLow)
                                                         {
-                                                            AlarmName = "Cảnh báo",
-                                                            AlarmDetail = "pH: " + environment.value.ToString() + " ngoài khoảng cho phép",
-                                                            AlarmDate = DateTime.UtcNow.AddHours(7),
-                                                            FarmId = farmId
-                                                        };
-                                                        unitOfWork.alarmRepository.Add(alarm);
-                                                        await unitOfWork.SaveChangeAsync();
-
-                                                        //await SendMail("vu34304@gmail.com", "Cảnh báo độ pH ao " + topic2, "pH: " + environment.value.ToString() + " ngoài khoảng cho phép");
-                                                        await SendMail("van048483@gmail.com", "Cảnh báo độ pH ao " + topic2, "pH: " + environment.value.ToString() + " ngoài khoảng cho phép");
+                                                            var alarm = new Alarm()
+                                                            {
+                                                                AlarmName = "Cảnh báo",
+                                                                AlarmDetail = "pH: " + environment.value.ToString() + " ngoài khoảng cho phép",
+                                                                AlarmDate = DateTime.UtcNow.AddHours(7),
+                                                                FarmId = farmId
+                                                            };
+                                                            unitOfWork.alarmRepository.Add(alarm);
+                                                            await unitOfWork.SaveChangeAsync();
+                                                            await SendMailForMember(MemberFarms, "[Cảnh báo] Độ pH ao " + topic2 + " vượt ngưỡng", "pH: " + environment.value.ToString() + " ngoài khoảng cho phép");
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                            default: break;
+                                                default: break;
+                                            }
                                         }
+
                                     }
                                     break;
                                 }
                         }
-
-                        if(countPond != 0)
-                        {
-                            var dataponds = string.Join(",", dataPonds);
-                            await SendMail("vu34304@gmail.com", "Gửi tín hiệu đo lại", dataponds);
-                            await SendMail("van048483@gmail.com", "Gửi tín hiệu đo lại", dataponds);
-
-                            //Gửi tín hiệu đo lại
-                            await _mqttClient.Publish($"SHRIMP_POND/SELECT_POND", dataponds, true);
-                            await _mqttClient.Publish($"SHRIMP_POND/POND/COUNT", count.ToString(), false);
-                            await Task.Delay(1000);
-                            await _mqttClient.Publish($"SHRIMP_POND/START", "START", false);
-                            await _mqttClient.Publish($"SHRIMP_POND/START_TIME/STATUS", "START", false);
-                            countPond = 0;
-                            dataPonds = new List<string>();
-                        }
-                        
                         break;
                     }
                 case "Machine_Status":
@@ -363,6 +342,8 @@ namespace ShrimpPond.Host.Hosting
                                         AlarmDate = DateTime.UtcNow.AddHours(7),
                                         FarmId = farmId
                                     };
+                                    await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 2 ", payloadMessage.ToString());
+
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
                                     break;
@@ -520,8 +501,8 @@ namespace ShrimpPond.Host.Hosting
                         };
                         unitOfWork.alarmRepository.Add(alarm);
                         await unitOfWork.SaveChangeAsync();
-                        await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 1 " , payloadMessage.ToString());
-                        await SendMail("vu34304@gmail.com", "Tình trạng kết nối ESP tủ điện 1 " , payloadMessage.ToString());
+                        await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
+                        //await SendMail("vu34304@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
                         break;
                     }
             }
@@ -529,11 +510,22 @@ namespace ShrimpPond.Host.Hosting
 
         private async Task TimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            await _mqttClient.Publish($"SHRIMP_POND/START", "START", false);
-            await _mqttClient.Publish($"SHRIMP_POND/START_TIME/STATUS", "START", false);
+            if (countPond != 0)
+            {
+                var dataponds = string.Join(",", dataPonds);
+                await SendMailForMember(MemberFarms, "[Thông báo] Gửi tín lại tín hiệu đo", "Danh sách ao bị lỗi khi đo: " + dataponds);
 
-            await SendMail("vu34304@gmail.com", "Gửi lại   ", "");
-            await SendMail("van048483@gmail.com", "Gửi lại  ", "");
+                // Gửi tín hiệu đo lại
+                await _mqttClient.Publish($"SHRIMP_POND/SELECT_POND", dataponds, true);
+                await _mqttClient.Publish($"SHRIMP_POND/POND/COUNT", countPond.ToString(), false);
+                await Task.Delay(1000);
+                await _mqttClient.Publish($"SHRIMP_POND/START", "START", false);
+                await _mqttClient.Publish($"SHRIMP_POND/START_TIME/STATUS", "START", false);
+                countPond = 0;
+                dataPonds = new List<string>();
+                timer.Stop();
+            }
+
         }
 
         private async Task SendMail(string email, string subject, string body)
@@ -545,6 +537,21 @@ namespace ShrimpPond.Host.Hosting
                 Body = body
             };
             await _gmailSender.SendGmail(gmail);
+        }
+
+        private async Task SendMailForMember(List<string> Emails, string subject, string body)
+        {
+            foreach (var email in Emails)
+            {
+                var gmail = new GmailMessage
+                {
+                    To = email,
+                    Subject = subject,
+                    Body = body
+                };
+                await _gmailSender.SendGmail(gmail);
+            }
+           
         }
     }
 }

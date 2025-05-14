@@ -41,7 +41,7 @@ namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
             }
 
             var members = new List<FarmRole>();
-            var admin = new FarmRole() { Email = request.Email, IsAdmin = true, Id = new Guid() };
+            var admin = new FarmRole() { Email = request.Email, Role = Role.Admin, Id = new Guid() };
             members.Add(admin);
             _unitOfWork.farmRoleRepository.Add(admin);
             var farmData = new Domain.Farm.Farm()

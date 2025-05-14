@@ -5,6 +5,7 @@ using ShrimpPond.Application.Feature.Farm.Command.CreateFarm;
 using ShrimpPond.Application.Feature.Farm.Command.DeleteFarm;
 using ShrimpPond.Application.Feature.Farm.Command.InviteMember;
 using ShrimpPond.Application.Feature.Farm.Command.RemoveMember;
+using ShrimpPond.Application.Feature.Farm.Command.UpdateRole;
 using ShrimpPond.Application.Feature.Farm.Queries.GetAllFarm;
 using ShrimpPond.Application.Feature.Farm.Queries.GetMemeber;
 
@@ -59,6 +60,12 @@ namespace ShrimpPond.API.Controllers
 
         [HttpPut("RemoveMember")]
         public async Task<IActionResult> RemoveMember([FromBody] RemoveMember e)
+        {
+            var id = await _mediator.Send(e);
+            return Ok(e);
+        }
+        [HttpPut("UpdateMember")]
+        public async Task<IActionResult> UpdateMember([FromBody] UpdateRole e)
         {
             var id = await _mediator.Send(e);
             return Ok(e);

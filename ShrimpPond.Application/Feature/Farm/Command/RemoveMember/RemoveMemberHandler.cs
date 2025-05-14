@@ -29,16 +29,20 @@ namespace ShrimpPond.Application.Feature.Farm.Command.RemoveMember
             {
                 throw new BadRequestException("Không tìm thấy trang trại");
             }
-
-            var member = _unitOfWork.farmRoleRepository.FindByCondition(x=>x.Email ==request.RemoveEmail &&  x.FarmId == request.FarmId).FirstOrDefault();
+            //Kiem tra co ton tai email ko
+            var member = _unitOfWork.farmRoleRepository.FindByCondition(x => x.Email == request.RemoveEmail && x.FarmId == request.FarmId).FirstOrDefault();
             if (member == null)
             {
                 throw new BadRequestException("Không tìm thấy dùng dùng");
             }
+            //kiem tra co dang xoa Manager ko
+            if(member.Role == Role.Admin)
+            {
+                throw new BadRequestException("Bạn không có quyền xóa thành viên");
+            }
 
-            var adminFarm = _unitOfWork.farmRepository
-                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.IsAdmin == true))
-                        .FirstOrDefault();
+            //Kiem tra co quyen admin ko
+            var adminFarm = _unitOfWork.farmRoleRepository.FindByCondition(x => x.Email == request.Email && x.FarmId == request.FarmId && x.Role == Role.Member || x.Role == Role.Admin).FirstOrDefault();
             if (adminFarm == null)
             {
                 throw new BadRequestException("Bạn không có quyền xóa thành viên!");

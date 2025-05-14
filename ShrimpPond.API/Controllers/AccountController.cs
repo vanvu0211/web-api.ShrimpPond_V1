@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OtpNet;
 using ShrimpPond.API.Authorization.Models;
 using ShrimpPond.Application.Contract.GmailService;
+using ShrimpPond.Application.Contract.Persistence.Genenric;
 using ShrimpPond.Application.Models.Gmail;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -22,13 +23,15 @@ namespace ShrimpPond.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly IGmailSender _gmailSender;
         private readonly IMemoryCache _cache;
-        public AccountController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGmailSender gmailSender, IMemoryCache cache)
+        private readonly IUnitOfWork _unitOfWork;
+        public AccountController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IGmailSender gmailSender, IMemoryCache cache, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _gmailSender = gmailSender;
             _cache = cache;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("Register")]
@@ -94,7 +97,7 @@ namespace ShrimpPond.API.Controllers
             // Kiểm tra OTP và email
             if (OtpCode != registrationData.Otp || email != registrationData.Email)
             {
-                return BadRequest(new { error = "Mã OTP hoặc email không chính xác." });
+                throw new BadHttpRequestException("Mã OTP không chính xác");
             }
 
             // Tạo user
@@ -199,6 +202,8 @@ namespace ShrimpPond.API.Controllers
                         SecurityAlgorithms.HmacSha256
                         )
                     );
+
+               
 
                 return Ok(new { Token = new JwtSecurityTokenHandler().WriteToken(token) });
             }

@@ -32,7 +32,7 @@ namespace ShrimpPond.Application.Feature.Farm.Queries.GetMemeber
 
             foreach(var mem in members)
             {
-                data.Add(new GetMemeberDTO() {Email = mem.Email, IsAdmin = mem.IsAdmin});
+                data.Add(new GetMemeberDTO() { Email = mem.Email, Role = mem.Role });
             }
             _logger.LogInformation("Get MemberList successfully");
 

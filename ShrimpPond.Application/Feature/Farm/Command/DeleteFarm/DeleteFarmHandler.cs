@@ -29,7 +29,7 @@ namespace ShrimpPond.Application.Feature.Farm.Command.DeleteFarm
             }
 
             var adminFarm = _unitOfWork.farmRepository
-                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.IsAdmin == true))
+                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.Role == Domain.Farm.Role.Admin || m.Role == Domain.Farm.Role.Admin))
                         .FirstOrDefault();
             if (adminFarm == null)
             {
@@ -42,6 +42,9 @@ namespace ShrimpPond.Application.Feature.Farm.Command.DeleteFarm
                 throw new BadRequestException($"Trang trại còn các ao: {string.Join(",", ponds.Select(pond => pond.PondName).OrderBy(name => name))}!");
             }
 
+            //Tìm danh sách role chứa farmId
+            var roles = _unitOfWork.farmRoleRepository.FindByCondition(x => x.FarmId == deleteFarm.FarmId).ToList();
+            _unitOfWork.farmRoleRepository.RemoveRange(roles);
             _unitOfWork.farmRepository.Remove(deleteFarm);
             await _unitOfWork.SaveChangeAsync();
             //return 

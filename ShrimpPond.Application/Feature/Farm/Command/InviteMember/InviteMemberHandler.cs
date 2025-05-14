@@ -33,14 +33,14 @@ namespace ShrimpPond.Application.Feature.Farm.Command.InviteMember
             {
                 throw new BadRequestException("Không tìm thấy trang trại");
             }
-            var user = await _userManager.FindByNameAsync(request.InviteEmail);
+            var user = await _userManager.FindByEmailAsync(request.InviteEmail);
             if (user == null)
             {
                 throw new BadRequestException($"Không tìm thấy người dùng với InviteEmail:{request.InviteEmail}");
             }
 
             var adminFarm = _unitOfWork.farmRepository
-                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.IsAdmin == true))
+                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.Role == Domain.Farm.Role.Member || m.Role == Domain.Farm.Role.Admin))
                         .FirstOrDefault();
             if (adminFarm == null)
             {
@@ -51,7 +51,7 @@ namespace ShrimpPond.Application.Feature.Farm.Command.InviteMember
             {
                 FarmId = request.FarmId,
                 Email = request.InviteEmail,
-                IsAdmin = false,
+                Role = Role.Member,
             };
             //Them thanh vien mới
             _unitOfWork.farmRoleRepository.Add(member);
