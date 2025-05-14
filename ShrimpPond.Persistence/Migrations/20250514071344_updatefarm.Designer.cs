@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShrimpPond.Persistence.DatabaseContext;
 
@@ -11,9 +12,10 @@ using ShrimpPond.Persistence.DatabaseContext;
 namespace ShrimpPond.Persistence.Migrations
 {
     [DbContext(typeof(ShrimpPondDbContext))]
-    partial class ShrimpPondDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514071344_updatefarm")]
+    partial class updatefarm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,12 +176,17 @@ namespace ShrimpPond.Persistence.Migrations
                     b.Property<int>("FarmId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("FarmId1")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FarmId");
+
+                    b.HasIndex("FarmId1");
 
                     b.ToTable("FarmRoles");
                 });
@@ -654,10 +661,14 @@ namespace ShrimpPond.Persistence.Migrations
             modelBuilder.Entity("ShrimpPond.Domain.Farm.FarmRole", b =>
                 {
                     b.HasOne("ShrimpPond.Domain.Farm.Farm", "Farm")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("FarmId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("ShrimpPond.Domain.Farm.Farm", null)
+                        .WithMany("Members")
+                        .HasForeignKey("FarmId1");
 
                     b.Navigation("Farm");
                 });

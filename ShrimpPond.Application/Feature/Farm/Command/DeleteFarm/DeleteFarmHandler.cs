@@ -22,21 +22,20 @@ namespace ShrimpPond.Application.Feature.Farm.Command.DeleteFarm
         {
 
             //validate
-            var deleteFarm = await _unitOfWork.farmRepository.GetByIdAsync(request.farmId);
+            //var deleteFarm = await _unitOfWork.farmRepository.GetByIdAsync(request.FarmId);
+            var deleteFarm = _unitOfWork.farmRepository
+                        .FindByCondition(x => x.FarmId == request.FarmId && x.Members.Any(m => m.Email == request.Email && m.IsAdmin == true))
+                        .FirstOrDefault();
             if (deleteFarm == null)
             {
-                throw new BadRequestException("Not found Farm");
+                throw new BadRequestException("Không tìm thấy trang trại!");
             }
 
             var ponds = _unitOfWork.pondRepository.FindByCondition(x => x.FarmId == deleteFarm.FarmId).ToList();
             if (ponds.Count !=  0)
             {     
-                throw new BadRequestException($"Trang trại còn các ao: {string.Join(",", ponds.Select(pond => pond.PondName).OrderBy(name => name))}");
+                throw new BadRequestException($"Trang trại còn các ao: {string.Join(",", ponds.Select(pond => pond.PondName).OrderBy(name => name))}!");
             }
-
-
-
-
 
             _unitOfWork.farmRepository.Remove(deleteFarm);
             await _unitOfWork.SaveChangeAsync();

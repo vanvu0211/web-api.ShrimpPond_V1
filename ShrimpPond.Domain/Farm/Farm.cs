@@ -9,7 +9,7 @@ namespace ShrimpPond.Domain.Farm
     public class Farm
     {
         public int FarmId { get; set; } 
-        public string Email { get; set; } = string.Empty;
+        public ICollection<FarmRole> Members { get; set; } 
         public string FarmName { get; set;} = string.Empty;
         public string Address { get; set; } = string.Empty;
     }

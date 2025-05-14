@@ -43,6 +43,7 @@ namespace ShrimpPond.Persistence.DatabaseContext
         public DbSet<Domain.Machine.PondId> PondIds { get; set; }
         public DbSet<Domain.Alarm.Alarm> Alarm { get; set; }
         public DbSet<Configuration> Configuration { get; set; }
+        public DbSet<FarmRole> FarmRoles { get; set; }
 
 
 
@@ -53,6 +54,13 @@ namespace ShrimpPond.Persistence.DatabaseContext
                 .HasOne(cs => cs.Farm)
                 .WithMany()
                 .HasForeignKey(cs => cs.FarmId)
+                .OnDelete(DeleteBehavior.NoAction); // Tắt cascade delete để tránh xung đột
+
+            // Pond -> Harvest (1-n)
+            modelBuilder.Entity<FarmRole>()
+                .HasOne(h => h.Farm)
+                .WithMany(p => p.Members)
+                .HasForeignKey(h => h.FarmId)
                 .OnDelete(DeleteBehavior.NoAction); // Tắt cascade delete để tránh xung đột
 
             // Farm -> CleanSensor (1-n)

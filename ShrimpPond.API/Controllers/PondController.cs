@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShrimpPond.Application.Feature.NurseryPond.Commands.ActiveNurseryPond;
 using ShrimpPond.Application.Feature.NurseryPond.Commands.CreatePond;
@@ -8,10 +7,8 @@ using ShrimpPond.Application.Feature.Pond.Commands.DeletePond;
 using ShrimpPond.Application.Feature.Pond.Commands.HarvestPond;
 using ShrimpPond.Application.Feature.Pond.Queries.GetAllPond;
 using ShrimpPond.Application.Feature.Pond.Queries.GetHarvestTime;
-using ShrimpPond.Application.Feature.Pond.Queries.GetPondAdvance;
 using ShrimpPond.Application.Feature.Pond.Queries.GetTimeClean;
 using ShrimpPond.Application.Feature.Transfer;
-using ShrimpPond.Domain.Farm;
 using ShrimpPond.Domain.PondData;
 
 namespace ShrimpPond.API.Controllers
@@ -27,13 +24,13 @@ namespace ShrimpPond.API.Controllers
             _mediator = mediator;
         }
         [HttpGet]
-        public async Task<IActionResult> GetPonds([FromQuery]int farmId, string? pondId, string? pondTypeName, string? pondTypeId, EPondStatus? pondStatus ,int pageSize = 200, int pageNumber = 1)
+        public async Task<IActionResult> GetPonds([FromQuery] int farmId, string? pondId, string? pondTypeName, string? pondTypeId, EPondStatus? pondStatus, int pageSize = 200, int pageNumber = 1)
         {
-            var ponds = await _mediator.Send(new GetAllPond() {farmId =farmId } );
+            var ponds = await _mediator.Send(new GetAllPond() { farmId = farmId });
             if (pondId != null)
             {
                 ponds = ponds.Where(x => x.pondId == pondId).ToList();
-                
+
             }
             if (pondTypeName != null)
             {
@@ -57,27 +54,18 @@ namespace ShrimpPond.API.Controllers
             return Ok(ponds);
         }
         [HttpGet("GetHarvestTime")]
-        public async Task<IActionResult> GetHarvestTime([FromQuery]   string pondId)
+        public async Task<IActionResult> GetHarvestTime([FromQuery] string pondId)
         {
             var harvestTime = await _mediator.Send(new GetHarvestTime { pondId = pondId });
             return Ok(harvestTime);
         }
 
-        [HttpGet("GetPondAd")]
-        public async Task<IActionResult> GetPondAd([FromQuery] string userName, string farmName, EPondStatus? pondStatus)
-        {
-            var ponds = await _mediator.Send(new GetPondAdvance { Email = userName, FarmName = farmName });
-            if (pondStatus != null)
-            {
-                ponds = ponds.Where(x => x.status == pondStatus).ToList();
-            }
-            return Ok(ponds);
-        }
+        
 
         [HttpGet("GetCleanTime")]
         public async Task<IActionResult> GetCleanTime([FromQuery] int farmId)
         {
-            var cleanTime = await _mediator.Send(new GetTimeClean(){ farmId = farmId });
+            var cleanTime = await _mediator.Send(new GetTimeClean() { farmId = farmId });
             return Ok(cleanTime);
         }
 
