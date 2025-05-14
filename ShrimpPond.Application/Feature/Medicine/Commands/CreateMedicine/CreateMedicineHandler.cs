@@ -40,7 +40,7 @@ namespace ShrimpPond.Application.Feature.Medicine.Commands.CreateMedicine
             var condition = _unitOfWork.medicineRepository.FindByCondition(x => x.Name == request.name && x.FarmId == farm.FarmId).FirstOrDefault();
             if (condition != null)
             {
-                throw new BadRequestException("Medicine already exist", validatorResult);
+                throw new BadRequestException("Thuốc đã tồn tại!", validatorResult);
             }
 
             var newmedicine = new Domain.Medicine.Medicine()

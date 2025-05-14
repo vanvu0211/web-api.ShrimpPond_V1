@@ -34,12 +34,12 @@ namespace ShrimpPond.Application.Feature.Food.Commands.CreateNewFood
             var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.farmId);
             if (farm == null)
             {
-                throw new BadRequestException("Farm not found");
+                throw new BadRequestException("Không tìm thấy trang trại");
             }
             var condition = _unitOfWork.foodRepository.FindByCondition(x => x.Name == request.Name && x.FarmId == farm.FarmId ).FirstOrDefault();
             if (condition != null)
             {
-                throw new BadRequestException("Food already exist", validatorResult);
+                throw new BadRequestException("Loại thức ăn đã tồn tại", validatorResult);
             }
 
             var newfood = new Domain.Food.Food()

@@ -25,7 +25,7 @@ namespace ShrimpPond.Application.Feature.Configuration.Command.SetConfig
             var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.FarmId);
             if (farm == null)
             {
-                throw new BadRequestException("Farm not found");
+                throw new BadRequestException("Không tìm thấy trang trại");
             }
 
             var newConfig = new Domain.Configuration.Configuration()

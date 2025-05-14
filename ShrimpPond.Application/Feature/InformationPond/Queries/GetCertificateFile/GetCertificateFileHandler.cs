@@ -30,7 +30,7 @@ namespace ShrimpPond.Application.Feature.InformationPond.Queries.GetCertificateF
                                         .FirstOrDefault();
             if(certificateWithFile == null)
             {
-                throw new BadRequestException("Not fond file");
+                throw new BadRequestException("Không tìm thấy file");
             }
             var data = new GetCertificateFileDTO()
             {

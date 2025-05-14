@@ -60,13 +60,13 @@ namespace ShrimpPond.Application.Feature.InformationPond.Queries.GetInformationP
             var pond = await _unitOfWork.pondRepository.GetByIdAsync(pondId);
             if (pond == null)
             {
-                throw new BadRequestException("Not found pond");
+                throw new BadRequestException("Không tìm thấy ao");
             }
             var originPond = await _unitOfWork.pondRepository.GetByIdAsync(pond.OriginPondId);
             var pondType = _unitOfWork.pondTypeRepository.FindByCondition(x => x.PondTypeId == pond.PondTypeId).FirstOrDefault();
             if (pondType == null)
             {
-                throw new BadRequestException("Not found pondType");
+                throw new BadRequestException("Không tìm thấy loại ao");
             }
 
             // Thông tin ao cơ bản

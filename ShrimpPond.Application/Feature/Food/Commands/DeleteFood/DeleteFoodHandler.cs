@@ -27,7 +27,7 @@ namespace ShrimpPond.Application.Feature.Food.Commands.DeleteFood
 
             if (deletefood == null)
             {
-                throw new BadRequestException("Not found PondType");
+                throw new BadRequestException("Không tìm thấy loại thức ăn");
             }
 
             _unitOfWork.foodRepository.Remove(deletefood);

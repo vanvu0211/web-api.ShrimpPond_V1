@@ -32,7 +32,7 @@ namespace ShrimpPond.Application.Feature.Food.Queries.GetAllFood
             var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.farmId);
             if (farm == null)
             {
-                throw new BadRequestException("Farm not found");
+                throw new BadRequestException("Không tìm thấy trang trại");
             }
             var foods = _unitOfWork.foodRepository.FindByCondition(x => x.FarmId == farm.FarmId).ToList();
 

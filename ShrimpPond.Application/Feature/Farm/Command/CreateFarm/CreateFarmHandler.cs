@@ -30,7 +30,7 @@ namespace ShrimpPond.Application.Feature.Farm.Command.CreateFarm
             var user = await _userManager.FindByNameAsync(request.Email);
             if (user == null)
             {
-                throw new BadRequestException("User not found");
+                throw new BadRequestException("Không tìm thấy người dùng!");
             }
             var farm = _unitOfWork.farmRepository
                         .FindByCondition(x => x.FarmName == request.FarmName && x.Members.Any(m => m.Email == request.Email))

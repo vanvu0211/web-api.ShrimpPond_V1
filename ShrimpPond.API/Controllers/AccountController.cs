@@ -38,7 +38,7 @@ namespace ShrimpPond.API.Controllers
             var existing = await _userManager.FindByEmailAsync(model.Email);
             if (existing != null)
             {
-                return BadRequest(new { error = "Email đã được sử dụng." });
+                throw new BadHttpRequestException("Email đã được sử dụng.");
             }
 
             // Tạo OTP và khóa cache

@@ -30,7 +30,7 @@ namespace ShrimpPond.Application.Feature.Alarm.Queries.GetAllAlarm
             var farm = await _unitOfWork.farmRepository.GetByIdAsync(request.FarmId);
             if (farm == null)
             {
-                throw new BadRequestException("Farm not found");
+                throw new BadRequestException("Không tìm thấy trang trại");
             }
             var alarms = _unitOfWork.alarmRepository.FindByCondition(x => x.FarmId == farm.FarmId).ToList();
 

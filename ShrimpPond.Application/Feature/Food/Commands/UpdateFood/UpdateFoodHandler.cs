@@ -31,7 +31,7 @@ namespace ShrimpPond.Application.Feature.Food.Commands.UpdateFood
             var food =  await _unitOfWork.foodRepository.GetByIdAsync(request.foodId);
             if (food == null )
             {
-                throw new BadRequestException("Not found Food!");
+                throw new BadRequestException("Không tìm thấy loại thức ăn !");
             }
 
             food.Name = request.newName;

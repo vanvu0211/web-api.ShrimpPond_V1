@@ -45,10 +45,6 @@ namespace ShrimpPond.API.Controllers
                 ponds = ponds.Where(x => x.status == pondStatus).ToList();
             }
             ponds = ponds.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToList();
-            //if (ponds.Count() ==0)
-            //{
-            //    throw new BadRequestException("Not found Pond");
-            //}
             ponds = ponds.OrderBy(x => x.pondName).ToList();
 
             return Ok(ponds);
