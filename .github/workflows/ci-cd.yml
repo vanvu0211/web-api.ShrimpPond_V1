@@ -19,7 +19,7 @@ jobs:
 
       # Khôi phục dependencies cho solution
       - name: Restore dependencies
-        run: dotnet restore src/ShrimpPond.CleanArchitecture.sln  # Cập nhật đường dẫn
+        run: dotnet restore ShrimpPond.CleanArchitecture.sln  # Sửa đường dẫn: bỏ "src/"
 
       # Build chỉ ShrimpPond.Host
       - name: Build ShrimpPond.Host
