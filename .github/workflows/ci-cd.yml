@@ -1,0 +1,76 @@
+﻿name: CI/CD Pipeline for ShrimpPond.Host
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Kiểm tra mã nguồn
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Thiết lập .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # Thay bằng phiên bản .NET của bạn
+
+      # Khôi phục dependencies cho solution
+      - name: Restore dependencies
+        run: dotnet restore ShrimpPond.CleanArchitecture.sln
+
+      # Build chỉ ShrimpPond.Host
+      - name: Build ShrimpPond.Host
+        run: dotnet build src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --no-restore
+
+      # (Tùy chọn) Chạy unit tests nếu có
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+        if: failure()
+
+      # Publish chỉ ShrimpPond.Host
+      - name: Publish ShrimpPond.Host
+        run: dotnet publish src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
+
+      # Upload artifact để triển khai
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: shrimppond-host-app
+          path: ./publish/
+
+  deploy:
+    needs: build
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      # Tải artifact đã publish
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: shrimppond-host-app
+          path: ./publish/
+
+      # Triển khai lên VPS Windows qua RDP
+      - name: Deploy to VPS
+        run: |
+          # Sử dụng PowerShell để tạo session RDP với thông tin từ Secrets
+          $securePassword = ConvertTo-SecureString $env:VPS_PASSWORD -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ($env:VPS_USERNAME, $securePassword)
+          $session = New-PSSession -ComputerName $env:VPS_IP -Credential $credential
+          Copy-Item -Path ./publish/* -Destination "C:\ShrimpPond\Host" -ToSession $session -Recurse
+          # (Tùy chọn) Khởi động lại dịch vụ
+          Invoke-Command -Session $session -ScriptBlock { Restart-Service -Name ShrimpPondHostService }
+        env:
+          VPS_IP: ${{ secrets.VPS_IP }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
