@@ -50,7 +50,7 @@ jobs:
   deploy:
     needs: build
     runs-on: windows-latest
-    if: github.ref == 'refs/heads/main' # Chỉ triển khai khi push vào main
+    if: github.ref == 'refs/heads/master' # Chỉ triển khai khi push vào master
 
     steps:
       # Tải artifact đã publish
