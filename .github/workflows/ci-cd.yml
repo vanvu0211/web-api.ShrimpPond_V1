@@ -17,9 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Kiểm tra nội dung thư mục (debug)
+      - name: List directory contents
+        run: dir  # Liệt kê file trong thư mục gốc
+
       # Khôi phục dependencies cho solution
       - name: Restore dependencies
-        run: dotnet restore ShrimpPond.CleanArchitecture.sln  # Sửa đường dẫn: bỏ "src/"
+        run: dotnet restore ShrimpPond.CleanArchitecture.sln
 
       # Build chỉ ShrimpPond.Host
       - name: Build ShrimpPond.Host
