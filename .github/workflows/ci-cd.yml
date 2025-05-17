@@ -17,12 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Thiết lập .NET SDK
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.15' # Thay bằng phiên bản .NET của bạn
-
       # Khôi phục dependencies cho solution
       - name: Restore dependencies
         run: dotnet restore ShrimpPond.CleanArchitecture.sln
@@ -40,7 +34,7 @@ jobs:
       - name: Publish ShrimpPond.Host
         run: dotnet publish src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
 
-      # Upload artifact để triển khai (cập nhật từ v3 sang v4)
+      # Upload artifact để triển khai
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -53,7 +47,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     steps:
-      # Tải artifact đã publish (cập nhật từ v3 sang v4)
+      # Tải artifact đã publish
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
