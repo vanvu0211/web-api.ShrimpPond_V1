@@ -82,9 +82,7 @@ namespace ShrimpPond.Application.Feature.Pond.Queries.GetAllPond
             
             //logging
             _logger.LogInformation("Get pond successfully");
-            // convert
-            //var data = _mapper.Map<List<PondDTO>>(pondTypes);
-            //return
+
             return data;
         }
     }

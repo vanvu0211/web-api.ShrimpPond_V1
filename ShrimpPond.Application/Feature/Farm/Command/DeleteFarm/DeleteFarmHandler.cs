@@ -42,6 +42,12 @@ namespace ShrimpPond.Application.Feature.Farm.Command.DeleteFarm
                 throw new BadRequestException($"Trang trại còn các ao: {string.Join(",", ponds.Select(pond => pond.PondName).OrderBy(name => name))}!");
             }
 
+            var pondTypes = _unitOfWork.pondTypeRepository.FindByCondition(x => x.FarmId == request.FarmId).ToList();
+            if(pondTypes.Count != 0)
+            {
+                _unitOfWork.pondTypeRepository.RemoveRange(pondTypes);
+            }
+
             //Tìm danh sách role chứa farmId
             var roles = _unitOfWork.farmRoleRepository.FindByCondition(x => x.FarmId == deleteFarm.FarmId).ToList();
             _unitOfWork.farmRoleRepository.RemoveRange(roles);

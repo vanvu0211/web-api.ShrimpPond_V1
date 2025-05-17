@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Memory;
 using ShrimpPond.Application.Contract.Persistence.Genenric;
 using ShrimpPond.Application.Exceptions;
 using ShrimpPond.Domain.Farm;
@@ -13,10 +14,12 @@ namespace ShrimpPond.Application.Feature.Farm.Command.UpdateRole
     public class UpdateRoleHandler : IRequestHandler<UpdateRole, string>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMemoryCache _cache; // Thêm IMemoryCache
 
-        public UpdateRoleHandler(IUnitOfWork unitOfWork)
+        public UpdateRoleHandler(IUnitOfWork unitOfWork, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
+            _cache = cache;
         }
 
         public async Task<string> Handle(UpdateRole request, CancellationToken cancellationToken)
@@ -44,7 +47,8 @@ namespace ShrimpPond.Application.Feature.Farm.Command.UpdateRole
             //Cập nhật quyền
             _unitOfWork.farmRoleRepository.Update(member);
             await _unitOfWork.SaveChangeAsync();
-          
+            //Xoa bo nho dem
+            _cache.Remove($"MemberInfo_{request.FarmId}");
             //return 
             return request.Email;
         }

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using ShrimpPond.Application.Contract.GmailService;
 using ShrimpPond.Application.Contract.Persistence.Genenric;
 using ShrimpPond.Application.Exceptions;
@@ -16,13 +17,15 @@ namespace ShrimpPond.Application.Feature.Farm.Command.InviteMember
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IMemoryCache _cache; // Thêm IMemoryCache
         private readonly IGmailSender _gmailSender;
 
-        public InviteMemberHandler(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IGmailSender gmailSender)
+        public InviteMemberHandler(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IGmailSender gmailSender, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _gmailSender = gmailSender;
+            _cache = cache;
         }
 
         public async Task<int> Handle(InviteMember request, CancellationToken cancellationToken)
@@ -61,12 +64,14 @@ namespace ShrimpPond.Application.Feature.Farm.Command.InviteMember
             await _unitOfWork.SaveChangeAsync();
 
             //Thông báo qua InviteEmail
-            await _gmailSender.SendGmail(new Models.Gmail.GmailMessage()
+            await _gmailSender.SendNotificationEmailAsync(new Models.Gmail.GmailMessage()
             {
                 To = request.InviteEmail,
                 Body = $"Bạn đã được chủ trang trại {farm.FarmName} thêm vào danh sách thành viên trang trại!",
                 Subject = $"[Thông báo] Thêm thành viên vào trang trại {farm.FarmName}"
             });
+            //Xoa bo nho dem
+            _cache.Remove($"MemberInfo_{request.FarmId}");
             //return 
             return farm.FarmId;
         }

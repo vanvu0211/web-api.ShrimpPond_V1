@@ -122,7 +122,6 @@ namespace ShrimpPond.API.Controllers
         }
 
         #region sendlink
-
         //[HttpPost("ConfirmEmail")]
         //public async Task<IActionResult> ConfirmEmail(string token, string username)
         //{
@@ -173,7 +172,6 @@ namespace ShrimpPond.API.Controllers
         //                                 // Hoặc một View cụ thể cho lỗi 404:
         //                                 // return View("NotFound");
         //}
-
         #endregion
 
         [HttpPost("Login")]
@@ -243,5 +241,8 @@ namespace ShrimpPond.API.Controllers
             return BadRequest(result.Errors);
 
         }
+
+
+
     }
 }

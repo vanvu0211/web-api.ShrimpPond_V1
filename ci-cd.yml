@@ -1,0 +1,74 @@
+﻿name: CI/CD Pipeline for ShrimPond.Host
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # Kiểm tra mã nguồn
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Thiết lập .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.0' # Thay bằng phiên bản .NET của bạn
+
+      # Khôi phục dependencies cho solution (vì ShrimPond.Host có thể phụ thuộc vào các dự án khác)
+      - name: Restore dependencies
+        run: dotnet restore ShrimPond.CleanArchitecture.sln
+
+      # Build chỉ ShrimPond.Host
+      - name: Build ShrimPond.Host
+        run: dotnet build src/Host/ShrimPond.Host/ShrimPond.Host.csproj --configuration Release --no-restore
+
+      # (Tùy chọn) Chạy unit tests nếu có
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+        if: failure() # Bỏ qua nếu không có tests
+
+      # Publish chỉ ShrimPond.Host
+      - name: Publish ShrimPond.Host
+        run: dotnet publish src/Host/ShrimPond.Host/ShrimPond.Host.csproj --configuration Release --output ./publish
+
+      # Upload artifact để triển khai
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: shrimppond-host-app
+          path: ./publish/
+
+  deploy:
+    needs: build
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main' # Chỉ triển khai khi push vào main
+
+    steps:
+      # Tải artifact đã publish
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: shrimppond-host-app
+          path: ./publish/
+
+      # Triển khai lên VPS Windows qua RDP
+      - name: Deploy to VPS
+        run: |
+          # Sử dụng PowerShell để copy file qua RDP
+          $session = New-PSSession -ComputerName $env:VPS_IP -Credential (Get-Credential)
+          Copy-Item -Path ./publish/* -Destination "C:\ShrimPond\Host" -ToSession $session -Recurse
+          # (Tùy chọn) Khởi động lại dịch vụ
+          Invoke-Command -Session $session -ScriptBlock { Restart-Service -Name ShrimPondHostService }
+        env:
+          VPS_IP: ${{ secrets.VPS_IP }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}

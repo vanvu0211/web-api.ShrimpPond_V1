@@ -50,6 +50,7 @@ namespace ShrimpPond.Infrastructure.GmailService
 
         }
 
+        #region GỬi mail confirm
         public async Task<bool> SendConfirmationEmailAsync(GmailMessage gmailMessage)
         {
             var message = new MimeMessage();
@@ -167,5 +168,277 @@ namespace ShrimpPond.Infrastructure.GmailService
 </body>
 </html>";
         }
+
+        #endregion
+
+        #region Gửi thông báo
+        public async Task<bool> SendNotificationEmailAsync(GmailMessage gmailMessage)
+        {
+            var message = new MimeMessage();
+            message.Sender = new MailboxAddress(_gmailSettings.DisplayName, _gmailSettings.Mail);
+            message.From.Add(new MailboxAddress(_gmailSettings.DisplayName, _gmailSettings.Mail));
+            message.To.Add(new MailboxAddress(gmailMessage.To, gmailMessage.To));
+            message.Subject = gmailMessage.Subject ?? "Thông Báo Từ Hệ Thống";
+
+            // Create HTML body for notification email
+            var builder = new BodyBuilder();
+            builder.HtmlBody = GenerateNotificationHtml(gmailMessage.To, gmailMessage.Body);
+            message.Body = builder.ToMessageBody();
+
+            using var smtp = new MailKit.Net.Smtp.SmtpClient();
+            try
+            {
+                await smtp.ConnectAsync(_gmailSettings.Host, _gmailSettings.Port, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_gmailSettings.Mail, _gmailSettings.Password);
+                await smtp.SendAsync(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send notification email: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                await smtp.DisconnectAsync(true);
+            }
+        }
+
+        // Method to generate HTML for notification email
+        private string GenerateNotificationHtml(string recipientName, string content)
+        {
+            return $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Thông Báo</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            text-align: center;
+            padding: 20px 0;
+            background-color: #28a745;
+            color: #ffffff;
+            border-radius: 8px 8px 0 0;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 24px;
+        }}
+        .content {{
+            padding: 20px;
+            text-align: left;
+        }}
+        .content p {{
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }}
+        .highlight-box {{
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333333;
+        }}
+        .highlight-box::before {{
+            content: 'ℹ️ ';
+            font-size: 18px;
+            vertical-align: middle;
+        }}
+        .action-button {{
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
+            background-color: #28a745;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }}
+        .action-button:hover {{
+            background-color: #218838;
+        }}
+        .footer {{
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777777;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Thông Báo</h1>
+        </div>
+        <div class='content'>
+            <p>Xin chào {recipientName},</p>
+            <div class='highlight-box'>{content}</div>
+            <p>Vui lòng liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.</p>
+            <a href='https://shrimp-farm-management.vercel.app/dashboard' class='action-button'>Liên Hệ Hỗ Trợ</a>
+        </div>
+        <div class='footer'>
+            <p>© {DateTime.Now.Year} HCMUT. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+        #endregion
+
+        #region Gửi cảnh báo
+        public async Task<bool> SendWarningEmailAsync(GmailMessage gmailMessage)
+        {
+            var message = new MimeMessage();
+            message.Sender = new MailboxAddress(_gmailSettings.DisplayName, _gmailSettings.Mail);
+            message.From.Add(new MailboxAddress(_gmailSettings.DisplayName, _gmailSettings.Mail));
+            message.To.Add(new MailboxAddress(gmailMessage.To, gmailMessage.To));
+            message.Subject = gmailMessage.Subject ?? "Cảnh Báo Từ Hệ Thống";
+
+            // Create HTML body for warning email
+            var builder = new BodyBuilder();
+            builder.HtmlBody = GenerateWarningHtml(gmailMessage.To, gmailMessage.Body);
+            message.Body = builder.ToMessageBody();
+
+            using var smtp = new MailKit.Net.Smtp.SmtpClient();
+            try
+            {
+                await smtp.ConnectAsync(_gmailSettings.Host, _gmailSettings.Port, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_gmailSettings.Mail, _gmailSettings.Password);
+                await smtp.SendAsync(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send warning email: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                await smtp.DisconnectAsync(true);
+            }
+        }
+
+        // Method to generate HTML for warning email
+        private string GenerateWarningHtml(string recipientName, string warningMessage)
+        {
+            return $@"
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Cảnh Báo</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            text-align: center;
+            padding: 20px 0;
+            background-color: #dc3545;
+            color: #ffffff;
+            border-radius: 8px 8px 0 0;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 24px;
+        }}
+        .content {{
+            padding: 20px;
+            text-align: left;
+        }}
+        .content p {{
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }}
+        .warning-box {{
+            background-color: #fff3f4;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333333;
+            font-weight: bold;
+        }}
+        .warning-box::before {{
+            content: '⚠️ ';
+            font-size: 18px;
+            vertical-align: middle;
+        }}
+        .action-button {{
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 15px;
+            background-color: #dc3545;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }}
+        .action-button:hover {{
+            background-color: #c82333;
+        }}
+        .footer {{
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777777;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Cảnh Báo Quan Trọng</h1>
+        </div>
+        <div class='content'>
+            <p>Xin chào {recipientName},</p>
+            <p>Chúng tôi đã phát hiện một vấn đề cần bạn chú ý:</p>
+            <div class='warning-box'>{warningMessage}</div>
+            <p>Vui lòng thực hiện hành động cần thiết ngay lập tức.</p>
+            <a href='https://shrimp-farm-management.vercel.app/dashboard' class='action-button'>Thực Hiện Hành Động</a>
+        </div>
+        <div class='footer'>
+            <p>© {DateTime.Now.Year} HCMUT. All rights reserved.</p>
+            <p>Nếu bạn không thực hiện hành động này, vui lòng liên hệ ngay để xác minh.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+        #endregion
     }
+
 }

@@ -152,7 +152,7 @@ namespace ShrimpPond.Host.Hosting
                                     };
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
-                                    await SendMail("van048483@gmail.com", "Van xả cần vệ sinh", "");
+                                    await SendNotification("van048483@gmail.com", "Van xả cần vệ sinh", "");
                                     break;
                                 }
                             default:
@@ -172,7 +172,7 @@ namespace ShrimpPond.Host.Hosting
                                             };
                                             unitOfWork.alarmRepository.Add(alarm);
                                             await unitOfWork.SaveChangeAsync();
-                                            //await SendMail("van048483@gmail.com", "[Cảnh báo] Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
+                                            //await SendNotification("van048483@gmail.com", "[Cảnh báo] Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
                                             await SendMailForMember(MemberFarms, "[Cảnh báo] Bơm bị hư bị hư hoặc không có nước", "Ao " + topic2.ToString());
                                             return;
                                         }
@@ -207,8 +207,6 @@ namespace ShrimpPond.Host.Hosting
                                         unitOfWork.alarmRepository.Add(alarm);
                                         await unitOfWork.SaveChangeAsync();
 
-                                        //await SendMail("vu34304/*@*/gmail.com", "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
-                                        //await SendMail("van048483@gmail.com", "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
                                         await SendMailForMember(MemberFarms, "[Cảnh báo] Lỗi van", "Van ao " + topic2 + " Không đóng");
                                         dataPonds.Add(topic2);
                                         countPond++;
@@ -242,7 +240,8 @@ namespace ShrimpPond.Host.Hosting
 
                                             unitOfWork.environmentStatusRepository.Add(data);
                                             await unitOfWork.SaveChangeAsync();
-                                            await SendMail("van048483@gmail.com", "[Thông báo] Gửi dữ liệu ao " + topic2, "Dữ liệu: " + JsonConvert.SerializeObject(data));
+
+                                            await SendNotification("van048483@gmail.com", "[Thông báo] Gửi dữ liệu ao " + topic2, "Dữ liệu: " + JsonConvert.SerializeObject(data));
 
                                             var config = unitOfWork.configurationRepository.FindByCondition(x => x.FarmId == farmId).OrderBy(x => x.Id).LastOrDefault();
                                             if (config == null)
@@ -342,7 +341,7 @@ namespace ShrimpPond.Host.Hosting
                                         AlarmDate = DateTime.UtcNow.AddHours(7),
                                         FarmId = farmId
                                     };
-                                    await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 2 ", payloadMessage.ToString());
+                                    await SendNotification("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 2 ", payloadMessage.ToString());
 
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
@@ -356,7 +355,7 @@ namespace ShrimpPond.Host.Hosting
                                     await _hubContext.Clients.All.SendAsync("MachineStatusChanged", jsonData);
 
                                     //Luu gia tri vao database
-                                    var oxiMachines = unitOfWork.machineRepository.FindByCondition(x => x.MachineName == "Máy quạt oxi").ToList();
+                                    var oxiMachines = unitOfWork.machineRepository.FindByCondition(x => x.MachineName == "Máy oxi").ToList();
                                     foreach (var oxiMachine in oxiMachines)
                                     {
                                         oxiMachine.Status = (payloadMessage == "OFF") ? false : true;
@@ -375,8 +374,8 @@ namespace ShrimpPond.Host.Hosting
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
                                     //Gui gmail
-                                    //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
-                                    //await SendMail("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
                                     break;
                                 }
                             case "Waste_separator":
@@ -403,8 +402,8 @@ namespace ShrimpPond.Host.Hosting
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
                                     //Gui gmail
-                                    //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
-                                    //await SendMail("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
                                     break;
                                 }
                             case "Fan1":
@@ -430,8 +429,8 @@ namespace ShrimpPond.Host.Hosting
                                     unitOfWork.alarmRepository.Add(alarm);
                                     await unitOfWork.SaveChangeAsync();
                                     //Gui gmail
-                                    //await SendMail("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
-                                    //await SendMail("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("vu34304@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
+                                    //await SendNotification("van048483@gmail.com", "Gửi dữ liệu ao " + topic2, jsonData);
                                     break;
                                 }
                             case "Fan2":
@@ -501,8 +500,8 @@ namespace ShrimpPond.Host.Hosting
                         };
                         unitOfWork.alarmRepository.Add(alarm);
                         await unitOfWork.SaveChangeAsync();
-                        await SendMail("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
-                        //await SendMail("vu34304@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
+                        await SendNotification("van048483@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
+                        //await SendNotification("vu34304@gmail.com", "Tình trạng kết nối ESP tủ điện 1 ", payloadMessage.ToString());
                         break;
                     }
             }
@@ -528,7 +527,7 @@ namespace ShrimpPond.Host.Hosting
 
         }
 
-        private async Task SendMail(string email, string subject, string body)
+        private async Task SendNotification(string email, string subject, string body)
         {
             var gmail = new GmailMessage
             {
@@ -536,7 +535,7 @@ namespace ShrimpPond.Host.Hosting
                 Subject = subject,
                 Body = body
             };
-            await _gmailSender.SendGmail(gmail);
+            await _gmailSender.SendNotificationEmailAsync(gmail);
         }
 
         private async Task SendMailForMember(List<string> Emails, string subject, string body)
@@ -549,7 +548,7 @@ namespace ShrimpPond.Host.Hosting
                     Subject = subject,
                     Body = body
                 };
-                await _gmailSender.SendGmail(gmail);
+                await _gmailSender.SendWarningEmailAsync(gmail);
             }
            
         }

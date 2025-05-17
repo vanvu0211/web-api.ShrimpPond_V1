@@ -11,5 +11,7 @@ namespace ShrimpPond.Application.Contract.GmailService
     {
         Task<bool> SendGmail(GmailMessage gmail);
         Task<bool> SendConfirmationEmailAsync(GmailMessage gmailMessage);
+        Task<bool> SendNotificationEmailAsync(GmailMessage gmailMessage);
+        Task<bool> SendWarningEmailAsync(GmailMessage gmailMessage);
     }
 }

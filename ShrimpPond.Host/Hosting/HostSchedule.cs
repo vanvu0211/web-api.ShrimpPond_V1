@@ -92,8 +92,8 @@ namespace ShrimpPond.Host.Hosting
                         unitOfWork.alarmRepository.Add(alarm);
                         await unitOfWork.SaveChangeAsync();
                         //Gui maiil
-                        await SendMail("vu34304@gmail.com", "Gửi danh sách Ao đo thành công", "");
-                        await SendMail("van048483@gmail.com", "Gửi danh sách ao đo thành công", "");
+                        await SendMail("vu34304@gmail.com", "[Thông báo] Gửi danh sách Ao đo thành công", "Danh sách các ao cần đo: "+ dataPonds);
+                        await SendMail("van048483@gmail.com", "[Thông báo] Gửi danh sách Ao đo thành công", "Danh sách các ao cần đo: "+ dataPonds);
 
                     }
                 }
@@ -110,7 +110,7 @@ namespace ShrimpPond.Host.Hosting
                 Body = body
             };
 
-            await _gmailSender.SendGmail(gmail);
+            await _gmailSender.SendNotificationEmailAsync(gmail);
         }
     }
 }
