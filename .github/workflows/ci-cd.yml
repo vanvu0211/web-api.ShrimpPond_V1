@@ -40,9 +40,9 @@ jobs:
       - name: Publish ShrimpPond.Host
         run: dotnet publish src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
 
-      # Upload artifact để triển khai
+      # Upload artifact để triển khai (cập nhật từ v3 sang v4)
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: shrimppond-host-app
           path: ./publish/
@@ -53,9 +53,9 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     steps:
-      # Tải artifact đã publish
+      # Tải artifact đã publish (cập nhật từ v3 sang v4)
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: shrimppond-host-app
           path: ./publish/
