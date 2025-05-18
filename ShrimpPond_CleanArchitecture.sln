@@ -30,6 +30,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{286EF28E-F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShrimpPond.Host", "ShrimpPond.Host\ShrimpPond.Host.csproj", "{839695E0-D6F2-4FB5-ACC9-3CF880DD0935}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{B0ECC641-9107-4D39-8967-993B110B4931}"
+	ProjectSection(SolutionItems) = preProject
+		ci-cd.yml = ci-cd.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +82,7 @@ Global
 		{06FE33CA-739A-47BB-83D3-01AE4821224F} = {956627D8-5CF4-4FEE-A541-FD243F8B65A2}
 		{286EF28E-FAFC-4A54-BE5C-FCC1B4786457} = {6519E2CF-7503-4B6F-9097-A3AADB2BA0A2}
 		{839695E0-D6F2-4FB5-ACC9-3CF880DD0935} = {286EF28E-FAFC-4A54-BE5C-FCC1B4786457}
+		{B0ECC641-9107-4D39-8967-993B110B4931} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6766C565-562E-4E89-BA18-C651C121A49F}
