@@ -20,7 +20,7 @@ jobs:
         run: dir
 
       - name: Restore dependencies
-        run: dotnet restore ShrimpPond.CleanArchitecture.sln
+        run: dotnet restore ShrimpPond_CleanArchitecture.sln
 
       - name: Build ShrimpPond.Host
         run: dotnet build src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --no-restore
