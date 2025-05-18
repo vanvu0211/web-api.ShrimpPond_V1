@@ -22,14 +22,21 @@ jobs:
       - name: List ShrimpPond.Host contents
         run: dir ShrimpPond.Host
 
+      - name: Verify ShrimpPond.Host directory
+        run: cd ShrimpPond.Host && dir
+
       - name: Restore dependencies
         run: dotnet restore ShrimpPond_CleanArchitecture.sln
 
       - name: Build ShrimpPond.Host
         run: dotnet build ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --no-restore
 
+      - name: Clean publish directory
+        run: if (Test-Path ./publish) { Remove-Item -Recurse -Force ./publish }
+        shell: pwsh
+
       - name: Publish ShrimpPond.Host
-        run: dotnet publish ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
+        run: dotnet publish ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish --no-build --no-restore
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
