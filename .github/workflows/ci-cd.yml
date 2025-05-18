@@ -19,14 +19,17 @@ jobs:
       - name: List directory contents
         run: dir
 
+      - name: List ShrimpPond.Host contents
+        run: dir ShrimpPond.Host
+
       - name: Restore dependencies
         run: dotnet restore ShrimpPond_CleanArchitecture.sln
 
       - name: Build ShrimpPond.Host
-        run: dotnet build src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --no-restore
+        run: dotnet build ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --no-restore
 
       - name: Publish ShrimpPond.Host
-        run: dotnet publish src/Host/ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
+        run: dotnet publish ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
