@@ -36,7 +36,7 @@ jobs:
         shell: pwsh
 
       - name: Publish ShrimpPond.Host
-        run: dotnet publish ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish --no-build --no-restore
+        run: dotnet publish ShrimpPond.Host/ShrimpPond.Host.csproj --configuration Release --output ./publish --no-build --no-restore --no-dependencies
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -58,6 +58,7 @@ jobs:
 
       - name: Deploy to VPS
         run: |
+          Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value $env:VPS_IP -Force
           $securePassword = ConvertTo-SecureString $env:VPS_PASSWORD -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential ($env:VPS_USERNAME, $securePassword)
           try {
@@ -85,3 +86,4 @@ jobs:
           VPS_IP: ${{ secrets.VPS_IP }}
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
           VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+        shell: pwsh
