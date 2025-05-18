@@ -57,33 +57,24 @@ jobs:
           path: ./publish/
 
       - name: Deploy to VPS
-        run: |
-          Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value $env:VPS_IP -Force
-          $securePassword = ConvertTo-SecureString $env:VPS_PASSWORD -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ($env:VPS_USERNAME, $securePassword)
-          try {
-            $session = New-PSSession -ComputerName $env:VPS_IP -Credential $credential -ErrorAction Stop
-            Invoke-Command -Session $session -ScriptBlock { 
-              if (Test-Path "C:\ShrimpPond\Host\backup") { Remove-Item "C:\ShrimpPond\Host\backup" -Recurse -Force }
-              if (Test-Path "C:\ShrimpPond\Host") { Move-Item "C:\ShrimpPond\Host" "C:\ShrimpPond\Host\backup" -Force }
-              New-Item -ItemType Directory -Path "C:\ShrimpPond\Host" -Force
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "./publish/*"
+          target: "C:/ShrimpPond/Host"
+
+      - name: Restart service on VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            if (Get-Service -Name ShrimpPondHostService -ErrorAction SilentlyContinue) {
+              Restart-Service -Name ShrimpPondHostService -ErrorAction SilentlyContinue
+            } else {
+              Write-Host "Service ShrimpPondHostService not found, please start manually."
             }
-            Copy-Item -Path ./publish/* -Destination "C:\ShrimpPond\Host" -ToSession $session -Recurse -Force
-            Invoke-Command -Session $session -ScriptBlock { 
-              if (Get-Service -Name ShrimpPondHostService -ErrorAction SilentlyContinue) {
-                Restart-Service -Name ShrimpPondHostService -ErrorAction SilentlyContinue
-              } else {
-                Write-Host "Service ShrimpPondHostService not found, please start manually."
-              }
-            }
-          } catch {
-            Write-Error "Deployment failed: $_"
-            exit 1
-          } finally {
-            if ($session) { Remove-PSSession -Session $session }
-          }
-        env:
-          VPS_IP: ${{ secrets.VPS_IP }}
-          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
-          VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
-        shell: pwsh
+          shell: pwsh
